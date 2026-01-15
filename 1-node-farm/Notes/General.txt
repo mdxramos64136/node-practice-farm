@@ -1,0 +1,2 @@
+1. each part of the website(css, js) will have its own request.
+For that reason all the styles in this project is inside the html page. 
