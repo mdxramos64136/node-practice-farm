@@ -1,0 +1,15 @@
+1. console.log(req.url); //will print / and /favicon.
+2. console.log(url.parse(req.url, true)); 
+true - parse a query (?id=0) into an object.
+It also shows the entire object and properties like pathName (/product) and 
+query (?id=0).
+
+2.1. TO get Access to those props, make a destructuring.
+
+3. LEMBRE-SE:  JSON.parse(data); devolve exatamente o tipo que o .json descreve.
+No caso de data.json, começa com [], lodo, devolve um array de objetos
+
+4. .join transforma um array em uma string.
+    - Ele concatena todos os elementos do array
+    - Coloca o separador entre eles. No caso do projeto '', junta tudo sem separar. 
+    - Retorna uma nova string. 

@@ -1,9 +1,8 @@
 const http = require("http");
-const url = require("url");
+const url = require("url"); //necessary to parse var in the URL
 const fs = require("fs");
 
-const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, "utf-8");
-const dataObj = JSON.parse(data);
+const replaceTemplate = require("./module/replaceTemplate");
 
 /**
  * Template  will also be the same so read it when start the application
@@ -23,39 +22,27 @@ const dataObj = JSON.parse(data);
  *
  * "not_organic" is the name of the class that makes the bedge disapear
  * */
+const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, "utf-8");
+const dataObj = JSON.parse(data); // returns an array of JS objs
+
 const tempOverview = fs.readFileSync(
   `${__dirname}/template-overview.html`,
-  "utf-8"
+  "utf-8",
 );
 const tempCard = fs.readFileSync(`${__dirname}/template-card.html`, "utf-8");
 const tempProduct = fs.readFileSync(
   `${__dirname}/template-product.html`,
-  "utf-8"
+  "utf-8",
 );
 
-const replaceTemplate = (tempCard, product) => {
-  let output = tempCard.replace(/{%PRODUCTNAME%}/g, product.productName);
-  output = output.replace(/{%IMAGE%}/g, product.image);
-  output = output.replace(/{%PRICE%}/g, product.price);
-  output = output.replace(/{%FROM%}/g, product.from);
-  output = output.replace(/{%NUTRIENTS%}/g, product.nutrients);
-  output = output.replace(/{%QUANTITY%}/g, product.quantity);
-  output = output.replace(/{%ID%}/g, product.id);
-
-  if (!product.organic)
-    output = output.replace(/{%NOT_ORGANIC%}/g, "not-organic");
-
-  //console.log(typeof output);
-
-  return output;
-};
+///////////////////////////////////////////////////
 
 const server = http.createServer((req, res) => {
-  console.log(req.url); //will print / and /favicon.
+  // get access to the object nad these props
+  const { query, pathname } = url.parse(req.url, true);
 
-  const pathName = req.url;
   //Overview
-  if (pathName === "/" || pathName === "/overview") {
+  if (pathname === "/" || pathname === "/overview") {
     res.writeHead(200, { "Content-type": "text/html" });
 
     const cardsHtml = dataObj
@@ -63,17 +50,22 @@ const server = http.createServer((req, res) => {
       .join("");
 
     const output = tempOverview.replace("{%PRODUCT_CARDS%}", cardsHtml);
-
     res.end(output);
   }
   //Product
-  else if (pathName === "/product")
-    res.end("From server: I am the overview page!");
+  else if (pathname === "/product") {
+    res.writeHead(200, { "Content-type": "text/html" });
+    const product = dataObj[query.id];
+    const output = replaceTemplate(tempProduct, product);
+    res.end(output);
+  }
   //API
-  else if (pathName === "/api") {
+  else if (pathname === "/api") {
     //tell the browser thaat we are sending a json
+
     res.writeHead(200, { "Content-type": "application/json" });
-    // res.end(data);
+
+    res.end(data);
     //Not Found
   } else {
     res.writeHead(404, {
@@ -85,5 +77,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(8000, "127.0.0.1", () =>
-  console.log("The server is up and running. Listening on port 8000!")
+  console.log("The server is up and running. Listening on port 8000!"),
 );
